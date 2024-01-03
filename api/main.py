@@ -24,7 +24,7 @@ app.add_middleware(
 
 # AWS S3 Configuration
 s3 = boto3.client('s3')
-bucket_name = 'qrcode-storage-devops-capstone'
+bucket_name = 'YOUR_BUCKET_NAME' # Add your bucket name here
 
 @app.post("/generate-qr/")
 async def generate_qr(url: str):
