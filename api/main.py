@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 import qrcode
 import boto3
 from io import BytesIO
@@ -7,6 +8,18 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = FastAPI()
+
+# Allowing CORS for local testing
+origins = [
+    "http://localhost:3000"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # AWS S3 Configuration
 s3 = boto3.client('s3')
