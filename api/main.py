@@ -55,7 +55,7 @@ async def generate_qr(url: str):
 
     try:
         # Upload to S3
-        s3.put_object(Bucket=bucket_name, Key=file_name, Body=img_byte_arr, ContentType='image/png', ACL='public-read')
+        s3.put_object(Bucket=bucket_name, Key=file_name, Body=img_byte_arr, ContentType='image/png')
         
         # Generate the S3 URL
         s3_url = f"https://{bucket_name}.s3.amazonaws.com/{file_name}"
