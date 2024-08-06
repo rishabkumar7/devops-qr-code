@@ -15,4 +15,5 @@ RUN npm run build
 
 EXPOSE 3000 
 
+USER root
 CMD ["npm", "start"]
