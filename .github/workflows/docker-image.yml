@@ -22,3 +22,18 @@ jobs:
         with:
             username: ${{ secrets.DOCKERHUB_USERNAME }}
             password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
+      -
+        name: Build and push the API image
+        uses: docker/build-push-action@v6
+        with:
+          context: ../api
+          push: true
+          tags: user/app:latest
+      -
+        name: Build and push the Frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ../front-end-nextjs
+          push: true
+          tags: user/app:latest
+      -
