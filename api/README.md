@@ -1,4 +1,13 @@
 # API Explanation:
+## Definitions:
+Container - 
+
+VM - 
+
+Docker -
+
+Kubernetes - 
+
 
 ## Dockerisation:
 
