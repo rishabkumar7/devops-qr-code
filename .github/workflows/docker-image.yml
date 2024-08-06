@@ -36,4 +36,3 @@ jobs:
           context: ../front-end-nextjs
           push: true
           tags: user/app:latest
-      -
