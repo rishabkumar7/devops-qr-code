@@ -1,12 +1,12 @@
 # API Explanation:
 ## Definitions:
-Container - 
+Container - Package consisting of  software + OS. Runs on top of an existing host.
 
-VM - 
+VM - Abstraction of the entire hardware.
 
-Docker -
+Docker - Tool performing OS level virtualisation
 
-Kubernetes - 
+Kubernetes - Container orchestration tool.
 
 
 ## Dockerisation:
@@ -20,7 +20,7 @@ This command tags the images and pushes them to the repo:
 `
 docker tag devops-qr-code-frontend:lastest vikramnayyar/devops-qr-code-frontend:latest
 
-docker push vikramnayyar/devops-capstone-challenge:tagname
+docker push vikramnayyar/devops-capstone-challenge:latest
 `
 
 Build the images and then use those images to run the containers.
