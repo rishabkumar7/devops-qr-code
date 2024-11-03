@@ -19,8 +19,9 @@ The API code exists in the `api` directory. You can run the API server locally:
 - Make sure you are in the `api` directory
 - Create a virtualenv by typing in the following command: `python -m venv .venv`
 - Install the required packages: `pip install -r requirements.txt`
-- Create a `.env` file, and add you AWS Access and Secret key, check  `.env.example`
-- Also, change the BUCKET_NAME to your S3 bucket name in `main.py`
+- Create a `.env` file, and add your AWS Access and Secret key for AWS or Azure Storage Connection string for Azure, check  `.env.example`
+- Set `CLOUD_PROVIDER` to `AWS` or `AZURE` accordingly in the .env
+- Also, change the BUCKET_NAME to your S3 bucket name in `main.py` (Similarly container name for Azure Storage)
 - Run the API server: `uvicorn main:app --reload`
 - Your API Server should be running on port `http://localhost:8000`
 

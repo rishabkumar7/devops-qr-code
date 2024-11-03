@@ -1,5 +1,6 @@
 annotated-types==0.6.0
 anyio==3.7.1
+azure-storage-blob==12.23.1
 boto3==1.34.11
 botocore==1.34.11
 click==8.1.7
