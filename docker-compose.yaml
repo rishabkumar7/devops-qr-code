@@ -1,0 +1,19 @@
+version: "3.8"
+services:
+  api:
+    build:
+      context: ./api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./api:/usr/src/app
+    environment:
+      ENV_FILE_PATH: .env
+
+  frontend:
+    build:
+      context: ./front-end-nextjs
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./front-end-nextjs:/usr/src/app
