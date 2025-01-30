@@ -4,16 +4,16 @@ import qrcode
 import boto3
 import os
 from io import BytesIO
-from dotenv import load_dotenv
 
-# Load environment variables (AWS Access Key and Secret Key)
+# Loading Environment variable (AWS Access Key and Secret Key)
+from dotenv import load_dotenv
 load_dotenv()
 
 app = FastAPI()
 
 # Allowing CORS for local testing
 origins = [
-    "http://localhost:3000"  # Update with your frontend URL if needed
+    "http://localhost:3000"
 ]
 
 app.add_middleware(
@@ -26,11 +26,10 @@ app.add_middleware(
 # AWS S3 Configuration
 s3 = boto3.client(
     's3',
-    aws_access_key_id=os.getenv("AWS_ACCESS_KEY"),
-    aws_secret_access_key=os.getenv("AWS_SECRET_KEY")
-)
+    aws_access_key_id= os.getenv("AWS_ACCESS_KEY"),
+    aws_secret_access_key= os.getenv("AWS_SECRET_KEY"))
 
-bucket_name = 'capstone-qr-code-bucket'  # Replace with your S3 bucket name
+bucket_name = 'capstone-qr-code-bucket' # Add your bucket name here
 
 @app.post("/generate-qr/")
 async def generate_qr(url: str):
@@ -55,18 +54,12 @@ async def generate_qr(url: str):
     file_name = f"qr_codes/{url.split('//')[-1]}.png"
 
     try:
-        # Upload to S3 (removed ACL='public-read' as it caused the error)
-        s3.put_object(
-            Bucket=bucket_name,
-            Key=file_name,
-            Body=img_byte_arr,
-            ContentType='image/png'
-        )
+        # Upload to S3
+        s3.put_object(Bucket=bucket_name, Key=file_name, Body=img_byte_arr, ContentType='image/png', ACL='public-read')
         
         # Generate the S3 URL
         s3_url = f"https://{bucket_name}.s3.amazonaws.com/{file_name}"
         return {"qr_code_url": s3_url}
-
     except Exception as e:
-        # Log error and raise HTTPException
-        raise HTTPException(status_code=500, detail=f"Error generating QR code: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+    

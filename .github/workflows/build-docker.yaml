@@ -1,0 +1,49 @@
+name: Build and Publish Docker Images
+
+on:
+  push: 
+    branches:
+      - main
+    paths:
+        - 'api/Dockerfile'
+        - 'front-end-nextjs/Dockerfile'
+
+jobs:
+  publish_images:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      # Step 2: Log in to Docker Hub
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u "echelonkay" --password-stdin
+
+      # Step 3: Build API Docker image
+      - name: Build API Docker image
+        run: docker build ./api/ -t echelonkay/devops-qr-code-api:latest --no-cache
+
+      # Step 4: Install dependencies for Frontend
+      - name: Install dependencies for Frontend
+        run: |
+          cd front-end-nextjs
+          npm install
+
+      # Step 5: Build Frontend
+      - name: Build Frontend
+        run: |
+          cd front-end-nextjs
+          npm run build
+
+      # Step 6: Build Frontend Docker image
+      - name: Build Frontend Docker image
+        run: docker build ./front-end-nextjs/ -t echelonkay/devops-qr-code-frontend:latest --no-cache
+
+      # Step 7: Push API Docker image to Docker Hub
+      - name: Push API Docker image
+        run: docker push echelonkay/devops-qr-code-api:latest
+
+      # Step 8: Push Frontend Docker image to Docker Hub
+      - name: Push Frontend Docker image
+        run: docker push echelonkay/devops-qr-code-frontend:latest
