@@ -4,7 +4,7 @@ on:
 
 jobs: 
   publish_images:
-    runs-on: ubunntu-latest
+    runs-on: ubuntu-latest
     steps: 
     - name: checkout
       uses: actions/checkout@v4  
@@ -12,5 +12,5 @@ jobs:
       run: docker build ./api/ -t zennnnnnnnnn/devops-qr-code-api:latest
     - name: push image to DockerHub
       run: |
-        dockerpush zennnnnnnnnn/devops-qr-code-api:latest  
+        docker push zennnnnnnnnn/devops-qr-code-api:latest  
 
