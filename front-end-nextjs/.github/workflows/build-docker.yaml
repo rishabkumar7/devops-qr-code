@@ -1,0 +1,19 @@
+name: Build and Publish image to Docker Hub
+on:
+  push:
+    branches:
+    - main
+
+jobs:
+  Build_and_publish_images:
+    runs-on: ubuntu-lastest
+    steps:
+    - name: checkout
+      uses: action/checkout@v4
+
+    - name: build image
+      run: docker build -t obinnanwaneri/docker-frontend:lastest ./front-end-nextjs
+
+    - name: push images to docker hub
+      run: |
+        docker push obinnanwaneri/docker-frontend:lastest
