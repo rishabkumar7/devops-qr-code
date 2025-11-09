@@ -6,14 +6,14 @@ on:
 
 jobs:
   Build_and_publish_images:
-    runs-on: ubuntu-lastest
+    runs-on: ubuntu-22.04
     steps:
     - name: checkout
-      uses: action/checkout@v4
+      uses: actions/checkout@v4
 
     - name: build image
-      run: docker build -t obinnanwaneri/docker-frontend:lastest ./front-end-nextjs
+      run: docker build -t obinnanwaneri/docker-frontend:${{github.sha}} ./front-end-nextjs
 
     - name: push images to docker hub
       run: |
-        docker push obinnanwaneri/docker-frontend:lastest
+        docker push obinnanwaneri/docker-frontend:${{github.sha}}
