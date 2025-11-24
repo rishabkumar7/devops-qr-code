@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { useState } from 'react';
 import axios from 'axios';
@@ -6,20 +6,44 @@ import axios from 'axios';
 export default function Home() {
   const [url, setUrl] = useState('');
   const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!url) {
+      setError('Podaj URL');
+      return;
+    }
+
+    setError('');
+    setQrCodeUrl('');
+    setLoading(true);
+
     try {
-      const response = await axios.post(`http://localhost:8000/generate-qr/?url=${url}`);
+      // wysyłamy POST na backend, url jako query param
+      const response = await axios.post(
+        'http://localhost:8000/generate-qr/',
+        null,
+        {
+          params: { url }, // ?url=...
+        }
+      );
+
       setQrCodeUrl(response.data.qr_code_url);
-    } catch (error) {
-      console.error('Error generating QR Code:', error);
+    } catch (err) {
+      console.error('Error generating QR Code:', err);
+      setError('Nie udało się wygenerować kodu QR');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>QR Code Generator</h1>
+
       <form onSubmit={handleSubmit} style={styles.form}>
         <input
           type="text"
@@ -28,14 +52,33 @@ export default function Home() {
           placeholder="Enter URL like https://example.com"
           style={styles.input}
         />
-        <button type="submit" style={styles.button}>Generate QR Code</button>
+        <button
+          type="submit"
+          style={styles.button}
+          disabled={loading}
+        >
+          {loading ? 'Generating...' : 'Generate QR Code'}
+        </button>
       </form>
-      {qrCodeUrl && <img src={qrCodeUrl} alt="QR Code" style={styles.qrCode} />}
+
+      {error && (
+        <p style={{ color: 'tomato', marginTop: '10px' }}>
+          {error}
+        </p>
+      )}
+
+      {qrCodeUrl && (
+        <img
+          src={qrCodeUrl}
+          alt="QR Code"
+          style={styles.qrCode}
+        />
+      )}
     </div>
   );
 }
 
-// Styles
+// Styles (zwykły JS object)
 const styles = {
   container: {
     minHeight: '100vh',
@@ -47,7 +90,7 @@ const styles = {
     color: 'white',
   },
   title: {
-    margin: '0',
+    margin: 0,
     lineHeight: '1.15',
     fontSize: '4rem',
     textAlign: 'center',
@@ -63,8 +106,7 @@ const styles = {
     border: 'none',
     marginTop: '20px',
     width: '300px',
-    color: '#121212'
-
+    color: '#121212',
   },
   button: {
     padding: '10px 20px',
@@ -77,5 +119,6 @@ const styles = {
   },
   qrCode: {
     marginTop: '20px',
+    maxWidth: '300px',
   },
 };

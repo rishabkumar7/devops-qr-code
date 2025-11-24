@@ -1,19 +1,24 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-import qrcode
-import boto3
+import logging
 import os
 from io import BytesIO
 
-# Loading Environment variable (AWS Access Key and Secret Key)
+import boto3
+import qrcode
 from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
+# Wczytanie zmiennych środowiskowych z .env
 load_dotenv()
+
+# Prosta konfiguracja logowania
+logging.basicConfig(level=logging.INFO)
 
 app = FastAPI()
 
-# Allowing CORS for local testing
+# CORS – dla lokalnego frontu (React np. na porcie 3000)
 origins = [
-    "http://localhost:3000"
+    "http://localhost:3000",
 ]
 
 app.add_middleware(
@@ -23,17 +28,53 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# AWS S3 Configuration
-s3 = boto3.client(
-    's3',
-    aws_access_key_id= os.getenv("AWS_ACCESS_KEY"),
-    aws_secret_access_key= os.getenv("AWS_SECRET_KEY"))
 
-bucket_name = 'YOUR_BUCKET_NAME' # Add your bucket name here
+# --- AWS S3 CONFIG ---------------------------------------------------------
+
+# Czytamy dane z .env
+aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID") or os.getenv("AWS_ACCESS_KEY")
+aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY") or os.getenv("AWS_SECRET_KEY")
+aws_region = os.getenv("AWS_REGION") or os.getenv("AWS_DEFAULT_REGION")
+
+# Tworzymy klienta S3
+# Jeśli region jest ustawiony w AWS_REGION/AWS_DEFAULT_REGION, boto3 go wykorzysta.
+s3_kwargs = {}
+if aws_access_key_id and aws_secret_access_key:
+    s3_kwargs["aws_access_key_id"] = aws_access_key_id
+    s3_kwargs["aws_secret_access_key"] = aws_secret_access_key
+if aws_region:
+    s3_kwargs["region_name"] = aws_region
+
+s3 = boto3.client("s3", **s3_kwargs)
+
+bucket_name = "leszek-bucket"  # <- tutaj Twój bucket
+
+
+# Helper: bezpieczna nazwa pliku z URL-a
+def sanitize_url_for_filename(url: str) -> str:
+    """
+    Usuwa/problemowe znaki z URL-a, tak żeby nadawał się na nazwę pliku w S3.
+    """
+    unsafe_chars = [":", "/", "?", "&", "=", " ", "#"]
+    safe = url
+    for ch in unsafe_chars:
+        safe = safe.replace(ch, "_")
+    return safe
+
+
+# --- ENDPOINT --------------------------------------------------------------
+
 
 @app.post("/generate-qr/")
 async def generate_qr(url: str):
-    # Generate QR Code
+    """
+    Generuje QR z podanego URL-a, wrzuca PNG do S3
+    i zwraca presigned URL do pobrania obrazka.
+    """
+    if not url:
+        raise HTTPException(status_code=400, detail="Parameter 'url' is required")
+
+    # 1. Generowanie kodu QR
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -44,22 +85,39 @@ async def generate_qr(url: str):
     qr.make(fit=True)
 
     img = qr.make_image(fill_color="black", back_color="white")
-    
-    # Save QR Code to BytesIO object
+
+    # 2. Zapis do pamięci (BytesIO)
     img_byte_arr = BytesIO()
-    img.save(img_byte_arr, format='PNG')
+    img.save(img_byte_arr, format="PNG")
     img_byte_arr.seek(0)
 
-    # Generate file name for S3
-    file_name = f"qr_codes/{url.split('//')[-1]}.png"
+    # 3. Nazwa pliku w S3
+    safe_name = sanitize_url_for_filename(url)
+    file_name = f"qr_codes/{safe_name}.png"
 
     try:
-        # Upload to S3
-        s3.put_object(Bucket=bucket_name, Key=file_name, Body=img_byte_arr, ContentType='image/png', ACL='public-read')
-        
-        # Generate the S3 URL
-        s3_url = f"https://{bucket_name}.s3.amazonaws.com/{file_name}"
+        # 4. Upload do S3
+        # Uwaga: nie używamy ACL, bo bucket ma ACL-e wyłączone (Bucket owner enforced).
+        s3.put_object(
+            Bucket=bucket_name,
+            Key=file_name,
+            Body=img_byte_arr,
+            ContentType="image/png",
+        )
+
+        # 5. Generowanie presigned URL (działa nawet przy prywatnym buckecie)
+        s3_url = s3.generate_presigned_url(
+            ClientMethod="get_object",
+            Params={"Bucket": bucket_name, "Key": file_name},
+            ExpiresIn=3600,  # URL ważny 1h (możesz zmienić)
+        )
+
+        # Jeśli KONIECZNIE chcesz "stały" URL, to wygląda tak:
+        # static_url = f"https://{bucket_name}.s3.amazonaws.com/{file_name}"
+        # ale wtedy musisz mieć publiczny bucket lub odpowiednią bucket policy.
+
         return {"qr_code_url": s3_url}
+
     except Exception as e:
+        logging.exception("Error while uploading to S3")
         raise HTTPException(status_code=500, detail=str(e))
-    
