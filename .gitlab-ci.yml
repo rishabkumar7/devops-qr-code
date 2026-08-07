@@ -1,16 +1,22 @@
 stages:
   - check
+  - test_api
   - build_api
   - build_front
 
 lint_code:
   stage: check
   image: python:3.10-slim
-  before_script:
-    - python3 ./api/test_main.py
-    - pip install flake8
   script:
+    - pip install flake8
     - flake8 . --exclude=venv
+
+test_api:
+  stage: test_api
+  image: python:3.10-slim
+  script:
+    - pip install -r api/requirements.txt
+    - python api/test_main.py
 
 build_api:
   stage: build_api
