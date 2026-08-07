@@ -57,8 +57,9 @@ deploy:
   before_script:
     - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
   script:
-    - docker compose up -d
+    - export CI_REGISTRY_IMAGE="$CI_REGISTRY_IMAGE"
+    - export IMAGE_TAG="$CI_COMMIT_SHA"
+    - docker compose pull
+    - docker compose up -d --remove-orphans
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
-  tags:
-    - qr
