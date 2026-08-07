@@ -47,7 +47,7 @@ build_front:
     - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
   script:
     - docker build
-        --build-arg NEXT_PUBLIC_API_URL="http://localhost:8000"
+        --build-arg NEXT_PUBLIC_API_URL="http://192.168.1.8:8000"
         -t $CI_REGISTRY_IMAGE/front:$CI_COMMIT_SHA ./front-end-nextjs
     - docker push $CI_REGISTRY_IMAGE/front:$CI_COMMIT_SHA
 
