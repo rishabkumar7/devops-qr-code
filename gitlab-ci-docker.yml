@@ -47,32 +47,23 @@ build_front:
   script:
     - >-
       docker build
-      --build-arg NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+      --build-arg NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL # replace with cm
       -t $CI_REGISTRY_IMAGE/front:$CI_COMMIT_SHA
       ./front-end-nextjs
     - docker push $CI_REGISTRY_IMAGE/front:$CI_COMMIT_SHA
 
 deploy:
   stage: deploy
-  image:
-    name: alpine/k8s:1.30.0
-    entrypoint: [""]
+  image: docker:29
+  variables:
+    DOCKER_HOST: "unix:///var/run/docker.sock"
   before_script:
-    - kubectl create secret docker-registry gitlab-registry-secret
-        --docker-server=$CI_REGISTRY
-        --docker-username=$CI_REGISTRY_USER
-        --docker-password=$CI_JOB_TOKEN
-        --dry-run=client -o yaml | kubectl apply -f -
+    - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
   script:
-    - kubectl cluster-info
-    - kubectl apply -f k8s/configmap.yml
-    - kubectl apply -f k8s/fastapi_service.yml
-    - kubectl apply -f k8s/frontend_service.yml
-    - kubectl apply -f k8s/gatewayapi.yml
-    - kubectl apply -f k8s/http-route.yml
-    - envsubst < k8s/fastapi_deployment.yml | kubectl apply -f -
-    - envsubst < k8s/frontend_deployment.yml | kubectl apply -f -
-    - kubectl rollout status deployment/fastapi --timeout=120s
-    - kubectl rollout status deployment/frontend --timeout=120s
+    - export CI_REGISTRY_IMAGE="$CI_REGISTRY_IMAGE"
+    - export IMAGE_TAG="$CI_COMMIT_SHA"
+    - docker compose pull
+    - docker compose up -d --remove-orphans
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
+
