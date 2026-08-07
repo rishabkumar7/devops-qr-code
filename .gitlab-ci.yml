@@ -5,6 +5,10 @@ stages:
   - build_front
   - deploy
 
+default:
+  tags:
+    - qr
+
 lint_code:
   stage: check
   image: python:3.10-slim
@@ -56,3 +60,5 @@ deploy:
     - docker compose up -d
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
+  tags:
+    - qr
