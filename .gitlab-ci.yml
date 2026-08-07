@@ -14,7 +14,7 @@ build:
   stage: build
   image: docker:29
   variables:
-    DOCKER_TLS_CERTDIR "/certs"
+    DOCKER_TLS_CERTDIR: "/certs"
   before_script:
     - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
   script:
