@@ -1,0 +1,22 @@
+stages:
+  - check
+  - build
+
+lint_code:
+  stage: check
+  image: python:3.10-slim
+  before_script:
+    - pip install flake8
+  script:
+    - flake8 . --ex
+
+build:
+  stage: build
+  image: docker:29
+  variables:
+    DOCKER_TLS_CERTDIR "/certs"
+  before_script:
+    - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+  script:
+    - docker build -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA" ./api
+    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
