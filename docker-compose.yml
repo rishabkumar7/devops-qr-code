@@ -1,0 +1,11 @@
+services:
+  api:
+    image: ${CI_REGISTRY_IMAGE}/api:${IMAGE_TAG}
+    ports:
+      - "8000:8000"
+    restart: always
+  front:
+    image: ${CI_REGISTRY_IMAGE}/front:${IMAGE_TAG}
+    ports:
+      - "3000:3000"
+    restart: always

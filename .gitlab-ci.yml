@@ -3,6 +3,7 @@ stages:
   - test_api
   - build_api
   - build_front
+  - deploy
 
 lint_code:
   stage: check
@@ -28,8 +29,8 @@ build_api:
   before_script:
     - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
   script:
-    - docker build -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA" ./api
-    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
+    - docker build -t "$CI_REGISTRY_IMAGE/api:$CI_COMMIT_SHA" ./api
+    - docker push "$CI_REGISTRY_IMAGE/api:$CI_COMMIT_SHA"
 
 build_front:
   stage: build_front
@@ -41,5 +42,17 @@ build_front:
   before_script:
     - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
   script:
-    - docker build -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA" ./front-end-nextjs
-    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
+    - docker build -t "$CI_REGISTRY_IMAGE/front:$CI_COMMIT_SHA" ./front-end-nextjs
+    - docker push "$CI_REGISTRY_IMAGE/front:$CI_COMMIT_SHA"
+
+deploy:
+  stage: deploy
+  image: docker:29
+  variables:
+    DOCKER_HOST: "unix:///var/run/docker.sock"
+  before_script:
+    - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+  script:
+    - docker compose up -d
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
