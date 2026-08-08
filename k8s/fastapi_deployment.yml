@@ -31,6 +31,8 @@ spec:
           labelSelector:
             matchLabels:
               name: fastapi
+      imagePullSecrets:
+        - name: gitlab-registry-secret
       containers:
         - name: fastapi
           image: "${CI_REGISTRY_IMAGE}/api:${CI_COMMIT_SHA}"

@@ -19,7 +19,8 @@ spec:
         runAsUser: 10001
         runAsGroup: 10001
         fsGroup: 10001
-
+      imagePullSecrets:
+        - name: gitlab-registry-secret
       containers:
         - name: frontend
           image: "${CI_REGISTRY_IMAGE}/front:${CI_COMMIT_SHA}"
