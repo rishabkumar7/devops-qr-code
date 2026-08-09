@@ -60,8 +60,8 @@ deploy:
   before_script:
     - kubectl create secret docker-registry gitlab-registry-secret
         --docker-server=$CI_REGISTRY
-        --docker-username=$CI_REGISTRY_USER
-        --docker-password=$CI_JOB_TOKEN
+        --docker-username=$CI_DEPLOY_USER
+        --docker-password=$CI_DEPLOY_PASSWORD
         --dry-run=client -o yaml | kubectl apply -f -
   script:
     - kubectl cluster-info

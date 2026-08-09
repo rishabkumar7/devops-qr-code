@@ -41,14 +41,14 @@ spec:
 
           startupProbe:
             httpGet:
-              path: /healthz/startup
+              path: /
               port: 3000
             initialDelaySeconds: 5
             periodSeconds: 5
             failureThreshold: 10
           readinessProbe:
             httpGet:
-              path: /healthz/ready
+              path: /
               port: 3000
             periodSeconds: 10
             timeoutSeconds: 2
@@ -56,7 +56,7 @@ spec:
             failureThreshold: 3
           livenessProbe:
             httpGet:
-              path: /healthz/liveness
+              path: /
               port: 3000
             periodSeconds: 15
             timeoutSeconds: 2

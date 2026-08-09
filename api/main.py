@@ -33,6 +33,13 @@ s3 = boto3.client(
 bucket_name = "YOUR_BUCKET_NAME"  # Add your bucket name here
 
 
+@app.get("/healthz/startup")
+@app.get("/healthz/ready")
+@app.get("/healthz/liveness")
+async def health_check():
+    return {"status": "ok"}
+
+
 @app.post("/generate-qr/")
 async def generate_qr(url: str):
     # Generate QR Code
