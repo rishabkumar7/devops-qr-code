@@ -1,5 +1,7 @@
 import { collectDefaultMetrics, register } from 'prom-client';
 
+export const dynamic = 'force-dynamic';
+
 // Initialize default node/runtime metrics
 if (!global._hasInitPrometheus) {
   collectDefaultMetrics();
