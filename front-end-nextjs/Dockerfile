@@ -7,7 +7,7 @@ RUN npm install
 COPY . .
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-RUN npm run bui	ld --if-present
+RUN npm run build --if-present
 
 FROM node:20-alpine AS runner
 WORKDIR /app
