@@ -28,3 +28,7 @@ data:
           - source_labels: [__meta_kubernetes_pod_name]
             action: replace
             target_label: pod
+          - source_labels: [pod]
+            regex: (fastapi-.*)
+            target_label: app_name
+            replacement: fastapi
