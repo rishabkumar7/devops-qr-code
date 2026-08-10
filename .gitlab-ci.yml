@@ -70,5 +70,5 @@ deploy:
     - kubectl rollout status deployment/ingress-nginx-controller -n ingress-nginx --timeout=120s
     - kubectl rollout status deployment/fastapi --timeout=120s
     - kubectl rollout status deployment/frontend --timeout=120s
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main"
+#  rules:
+#    - if: $CI_COMMIT_BRANCH == "main"
