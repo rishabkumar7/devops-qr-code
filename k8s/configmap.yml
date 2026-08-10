@@ -4,4 +4,4 @@ kind: ConfigMap
 metadata:
   name: cm
 data:
-  NEXT_PUBLIC_API_URL: "http://192.168.1.8:8000"
+  NEXT_PUBLIC_API_URL: "/api"

@@ -65,13 +65,9 @@ deploy:
         --dry-run=client -o yaml | kubectl apply -f -
   script:
     - kubectl cluster-info
-    - kubectl apply -f k8s/configmap.yml
-    - kubectl apply -f k8s/fastapi_service.yml
-    - kubectl apply -f k8s/frontend_service.yml
-    - kubectl apply -f k8s/gatewayapi.yml
-    - kubectl apply -f k8s/http-route.yml
-    - envsubst < k8s/fastapi_deployment.yml | kubectl apply -f -
-    - envsubst < k8s/frontend_deployment.yml | kubectl apply -f -
+    - kubectl delete validatingwebhookconfiguration ingress-nginx-admission --ignore-not-found
+    - kubectl kustomize k8s/ | envsubst '$CI_REGISTRY_IMAGE $CI_COMMIT_SHA' | kubectl apply -f -
+    - kubectl rollout status deployment/ingress-nginx-controller -n ingress-nginx --timeout=120s
     - kubectl rollout status deployment/fastapi --timeout=120s
     - kubectl rollout status deployment/frontend --timeout=120s
   rules:

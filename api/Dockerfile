@@ -15,11 +15,13 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     libpq5 \
     && rm -rf /var/lib/apt/lists/*
-RUN groupadd -r pythongr && useradd -r -g pythongr -s /sbin/nologin python
+
+RUN groupadd -g 10001 appgroup && \
+    useradd -u 10001 -g appgroup -m -s /bin/bash appuser
 
 COPY --from=builder /install /usr/local
 COPY --chown=python:pythongr . .
 
-USER python
+USER 10001
 EXPOSE 8000
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
