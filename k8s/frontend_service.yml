@@ -8,7 +8,7 @@ spec:
     name: frontend
   type: ClusterIP
   ports:
-  - name: api
-    port: 3000
-    targetPort: 3000
-    protocol: TCP
+    - name: api
+      port: 3000
+      targetPort: 3000
+      protocol: TCP

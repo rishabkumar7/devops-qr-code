@@ -66,4 +66,3 @@ deploy:
     - docker compose up -d --remove-orphans
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
-

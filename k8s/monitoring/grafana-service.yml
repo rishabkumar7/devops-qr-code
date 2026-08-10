@@ -4,8 +4,10 @@ metadata:
   name: grafana-service
   namespace: default
 spec:
+  type: NodePort
   selector:
     app: grafana
   ports:
-  - port: 3000
-    targetPort: 3000
+    - port: 3000
+      targetPort: 3000
+      nodePort: 30001
