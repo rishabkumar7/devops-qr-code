@@ -10,6 +10,7 @@ resources:
   - frontend_service.yml
   - ingress.yml
   - monitoring/prometheus-configmap.yml
+  - monitoring/prometheus-rbac.yml
   - monitoring/prometheus-deployment.yml
   - monitoring/prometheus-service.yml
   - monitoring/grafana-deployment.yml
