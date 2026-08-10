@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_fastapi_instrumentator import Instrumentator
 import qrcode
 import boto3
 import os
@@ -10,7 +11,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-app = FastAPI(redirect_slashes=False)
+app = FastAPI
+
+# Expose /metrics for Prometheus
+Instrumentator().instrument(app).expose(app)
+
+@app.get("/")
+def read_root():
+    return {"message": "API is running"}
 
 # Allowing CORS for local testing
 origins = ["*"]

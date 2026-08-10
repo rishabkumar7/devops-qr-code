@@ -9,6 +9,11 @@ resources:
   - frontend_deployment.yml
   - frontend_service.yml
   - ingress.yml
+  - monitoring/prometheus-configmap.yml
+  - monitoring/prometheus-deployment.yml
+  - monitoring/prometheus-service.yml
+  - monitoring/grafana-deployment.yml
+  - monitoring/grafana-service.yml
 
 patches:
   - path: ingress_nginx.yml

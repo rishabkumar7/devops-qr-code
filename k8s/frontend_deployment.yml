@@ -10,6 +10,10 @@ spec:
       name: frontend
   template:
     metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/api/metrics"
       labels:
         name: frontend
     spec:

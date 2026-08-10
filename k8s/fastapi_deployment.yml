@@ -15,6 +15,10 @@ spec:
       name: fastapi
   template:
     metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
       labels:
         name: fastapi
     spec:
