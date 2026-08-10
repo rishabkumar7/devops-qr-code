@@ -62,7 +62,7 @@ deploy:
         --docker-server=$CI_REGISTRY
         --docker-username=$CI_DEPLOY_USER
         --docker-password=$CI_DEPLOY_PASSWORD
-        --dry-run=client -o yaml | kubectl apply -f -
+        --dry-run=client --validate=false -o yaml | kubectl apply -f -
   script:
     - kubectl cluster-info
     - kubectl delete validatingwebhookconfiguration ingress-nginx-admission --ignore-not-found
