@@ -17,6 +17,7 @@ app = FastAPI()
 # Expose /metrics for Prometheus
 Instrumentator().instrument(app).expose(app)
 
+
 @app.get("/")
 def read_root():
     return {"message": "API is running"}
