@@ -11,7 +11,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-app = FastAPI
+app = FastAPI()
+
 
 # Expose /metrics for Prometheus
 Instrumentator().instrument(app).expose(app)
