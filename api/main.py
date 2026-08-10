@@ -15,7 +15,10 @@ app = FastAPI()
 
 
 # Expose /metrics for Prometheus
-Instrumentator().instrument(app).expose(app)
+Instrumentator(
+    metric_namespace="fastapi",
+    app_name="fastapi"
+).instrument(app).expose(app)
 
 
 @app.get("/")
