@@ -68,7 +68,7 @@ deploy:
     - kubectl delete validatingwebhookconfiguration ingress-nginx-admission --ignore-not-found
     - kubectl kustomize k8s/ | envsubst '$CI_REGISTRY_IMAGE $CI_COMMIT_SHA' | kubectl apply -f -
     - kubectl rollout status deployment/ingress-nginx-controller -n ingress-nginx --timeout=120s
-    - kubectl rollout status deployment/fastapi --timeout=120s
-    - kubectl rollout status deployment/frontend --timeout=120s
+    - kubectl rollout status deployment/fastapi --timeout=180s
+    - kubectl rollout status deployment/frontend --timeout=180s
 #  rules:
 #    - if: $CI_COMMIT_BRANCH == "main"
