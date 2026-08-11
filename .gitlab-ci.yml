@@ -1,0 +1,88 @@
+stages:
+  - lint
+  - check
+  - test
+  - build
+  - deploy
+
+default:
+  tags:
+    - qr
+
+lint_pre_commit:
+  stage: lint
+  image: python:3.11-slim
+  before_script:
+    - apt-get update && apt-get install -y git curl
+    - pip install pre-commit
+    - curl -sS -L https://github.com/gitleaks/gitleaks/releases/download/v8.18.2/gitleaks_8.18.2_linux_x64.tar.gz | tar -xz -C /usr/local/bin gitleaks
+  script:
+    - pre-commit run --all-files
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+lint_code:
+  stage: check
+  image: python:3.10-slim
+  script:
+    - pip install flake8
+    - flake8 . --exclude=venv
+
+test_api:
+  stage: test
+  image: python:3.10-slim
+  script:
+    - pip install -r api/requirements.txt
+    - python api/test_main.py
+
+build_api:
+  stage: build
+  image: docker:29
+  services:
+    - docker:29-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  before_script:
+    - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+  script:
+    - docker build -t "$CI_REGISTRY_IMAGE/api:$CI_COMMIT_SHA" ./api
+    - docker push "$CI_REGISTRY_IMAGE/api:$CI_COMMIT_SHA"
+
+build_front:
+  stage: build
+  image: docker:29
+  services:
+    - docker:29-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  before_script:
+    - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+  script:
+    - >-
+      docker build
+      --build-arg NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+      -t $CI_REGISTRY_IMAGE/front:$CI_COMMIT_SHA
+      ./front-end-nextjs
+    - docker push $CI_REGISTRY_IMAGE/front:$CI_COMMIT_SHA
+
+deploy:
+  stage: deploy
+  image:
+    name: alpine/k8s:1.30.0
+    entrypoint: [""]
+  before_script:
+    - kubectl create secret docker-registry gitlab-registry-secret
+        --docker-server=$CI_REGISTRY
+        --docker-username=$CI_DEPLOY_USER
+          --docker-password=$CI_DEPLOY_PASSWORD
+        --dry-run=client -o yaml | kubectl apply --validate=false -f -
+  script:
+    - kubectl cluster-info
+    - kubectl delete validatingwebhookconfiguration ingress-nginx-admission --ignore-not-found
+    - kubectl kustomize k8s/ | envsubst '$CI_REGISTRY_IMAGE $CI_COMMIT_SHA' | kubectl apply -f -
+    - kubectl rollout status deployment/ingress-nginx-controller -n ingress-nginx --timeout=120s
+    - kubectl rollout status deployment/fastapi --timeout=180s
+    - kubectl rollout status deployment/frontend --timeout=180s
+#  rules:
+#    - if: $CI_COMMIT_BRANCH == "main"

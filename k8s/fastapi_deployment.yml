@@ -1,0 +1,76 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      name: fastapi
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+      labels:
+        name: fastapi
+    spec:
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              name: fastapi
+      imagePullSecrets:
+        - name: gitlab-registry-secret
+      containers:
+        - name: fastapi
+          image: "${CI_REGISTRY_IMAGE}/api:${CI_COMMIT_SHA}"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: api
+              containerPort: 8000
+          resources:
+            requests:
+              cpu: "125m"
+              memory: "128Mi"
+            limits:
+              cpu: "250m"
+              memory: "256Mi"
+
+          startupProbe:
+            httpGet:
+              path: /healthz/startup
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 10
+          readinessProbe:
+            httpGet:
+              path: /healthz/ready
+              port: 8000
+            periodSeconds: 10
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /healthz/liveness
+              port: 8000
+            periodSeconds: 15
+            timeoutSeconds: 2
+            failureThreshold: 3
